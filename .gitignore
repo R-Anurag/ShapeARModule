@@ -1,0 +1,31 @@
+# Unity generated
+Library/
+Temp/
+Logs/
+obj/
+Build/
+Builds/
+UserSettings/
+
+# Unity cache
+*.pidb
+*.suo
+*.userprefs
+*.unityproj
+*.booproj
+
+# Visual Studio
+.vs/
+*.csproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# JetBrains
+.idea/
+*.user
+
+# Git LFS placeholder
+!*.meta
