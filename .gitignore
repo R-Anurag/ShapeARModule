@@ -6,6 +6,7 @@ obj/
 Build/
 Builds/
 UserSettings/
+.utmp/
 
 # Unity cache
 *.pidb
@@ -26,6 +27,10 @@ Thumbs.db
 # JetBrains
 .idea/
 *.user
+
+# Packages
+ContentPackages/
+*.tgz
 
 # Git LFS placeholder
 !*.meta
