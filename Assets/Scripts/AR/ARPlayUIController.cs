@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -65,6 +66,12 @@ public class ARPlayUIController : MonoBehaviour
         WireBounceSliders();
         backButton.onClick.AddListener(GoBack);
         spawner.OnShapeSpawned += OnShapeSpawned;
+    }
+
+    void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
+            GoBack();
     }
 
     void OnDestroy() => spawner.OnShapeSpawned -= OnShapeSpawned;

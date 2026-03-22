@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -28,6 +29,12 @@ public class BehaviourSelector : MonoBehaviour
         scaleButton.onClick.AddListener(()  => SelectBehaviour("Scale"));
 
         backButton.onClick.AddListener(GoBack);
+    }
+
+    void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
+            GoBack();
     }
 
     void SelectBehaviour(string behaviourName)

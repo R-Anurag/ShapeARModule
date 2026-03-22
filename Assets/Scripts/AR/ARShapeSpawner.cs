@@ -24,6 +24,7 @@ public class ARShapeSpawner : MonoBehaviour
 
     private readonly List<ARRaycastHit> _hits = new();
     private bool _spawned = false;
+    private GameObject _spawnedShape;
 
     void Awake()
     {
@@ -38,7 +39,6 @@ public class ARShapeSpawner : MonoBehaviour
 
     void OnTap(InputAction.CallbackContext ctx)
     {
-        if (_spawned) return;
         if (!ctx.action.WasPressedThisFrame()) return;
 
         Vector2 screenPos;
@@ -52,7 +52,24 @@ public class ARShapeSpawner : MonoBehaviour
         screenPos = touch.position.ReadValue();
 #endif
 
+        if (_spawned)
+        {
+            TryOpenLink(screenPos);
+            return;
+        }
+
         TrySpawnAt(screenPos);
+    }
+
+    void TryOpenLink(Vector2 screenPos)
+    {
+        if (_spawnedShape == null) return;
+        var link = _spawnedShape.GetComponent<TappableLink>();
+        if (link == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(screenPos);
+        if (_spawnedShape.GetComponentInChildren<Collider>().Raycast(ray, out _, 100f))
+            link.Open();
     }
 
     void TrySpawnAt(Vector2 screenPosition)
@@ -105,6 +122,7 @@ public class ARShapeSpawner : MonoBehaviour
         planeManager.enabled = false;
         _spawned = true;
 
+        _spawnedShape = shape;
         OnShapeSpawned?.Invoke(shape);
     }
 

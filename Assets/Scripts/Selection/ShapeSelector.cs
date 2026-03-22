@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -50,6 +51,12 @@ public class ShapeSelector : MonoBehaviour
         cubeToggle.GetComponent<ToggleSpriteSwap>()?.ForceRefresh(saved == "ShapeCube");
         cylinderToggle.GetComponent<ToggleSpriteSwap>()?.ForceRefresh(saved == "ShapeCylinder");
         pyramidToggle.GetComponent<ToggleSpriteSwap>()?.ForceRefresh(saved == "ShapePyramid");
+    }
+
+    void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
+            Application.Quit();
     }
 
     void OnContinue()
