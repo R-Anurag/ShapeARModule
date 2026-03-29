@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ShapeARModule.Tests.PlayMode")]
+
 public class ARPlayUIController : MonoBehaviour
 {
     [Header("AR")]
@@ -50,6 +52,10 @@ public class ARPlayUIController : MonoBehaviour
     private BounceBehaviour _bounceBehaviour;
     private ScaleBehaviour  _scaleBehaviour;
 
+    private const float SpeedMin = 10f;
+    private const float SpeedMax = 360f;
+    private const float ScaleSpeedMin = 0.5f;
+    private const float ScaleSpeedMax = 10f;
     private const float SpeedStep = 30f;
     private const float ScaleSpeedStep = 0.5f;
     private const float BounceSpeedMin = 0.5f;
@@ -60,6 +66,7 @@ public class ARPlayUIController : MonoBehaviour
     void Start()
     {
         ShowPanelForBehaviour(ShapeModuleCache.data.behaviourName);
+        HideAllPanels();
         WireMoveButtons();
         WireSpinButtons();
         WireScaleButtons();
@@ -74,7 +81,7 @@ public class ARPlayUIController : MonoBehaviour
             GoBack();
     }
 
-    void OnDestroy() => spawner.OnShapeSpawned -= OnShapeSpawned;
+    void OnDestroy() { if (spawner != null) spawner.OnShapeSpawned -= OnShapeSpawned; }
 
     void OnShapeSpawned(GameObject shape)
     {
@@ -82,9 +89,29 @@ public class ARPlayUIController : MonoBehaviour
         _spinBehaviour   = shape.GetComponent<SpinBehaviour>();
         _bounceBehaviour = shape.GetComponent<BounceBehaviour>();
         _scaleBehaviour  = shape.GetComponent<ScaleBehaviour>();
+
+        if (_bounceBehaviour != null)
+        {
+            _bounceBehaviour.speed  = bounceSpeedSlider.value;
+            _bounceBehaviour.height = bounceHeightSlider.value;
+        }
+
+        if (_moveBehaviour  != null) RefreshMoveButtons(_moveBehaviour.direction);
+        if (_spinBehaviour  != null) RefreshSpinButtons(_spinBehaviour.axis);
+        if (_scaleBehaviour != null) RefreshScaleButtons(_scaleBehaviour.mode);
+
+        ShowPanelForBehaviour(ShapeModuleCache.data.behaviourName);
     }
 
     // ── Panel visibility ──────────────────────────────────────────────────────
+
+    void HideAllPanels()
+    {
+        moveAnimationPanel.SetActive(false);
+        spinAnimationPanel.SetActive(false);
+        bounceAnimationPanel.SetActive(false);
+        scaleAnimationPanel.SetActive(false);
+    }
 
     void ShowPanelForBehaviour(string behaviourName)
     {
@@ -144,10 +171,14 @@ public class ARPlayUIController : MonoBehaviour
         zAxisButton.SetSelected(active == SpinBehaviour.SpinAxis.Z);
     }
 
-    void AdjustSpinSpeed(float delta)
+    void AdjustSpinSpeed(float delta) => internal_AdjustSpinSpeed(delta);
+
+    internal void internal_AdjustSpinSpeed(float delta)
     {
-        if (_spinBehaviour != null)
-            _spinBehaviour.speed = Mathf.Clamp(_spinBehaviour.speed + delta, 10f, 360f);
+        if (_spinBehaviour == null) return;
+        _spinBehaviour.speed = Mathf.Clamp(_spinBehaviour.speed + delta, SpeedMin, SpeedMax);
+        decreaseSpeedButton.interactable = _spinBehaviour.speed > SpeedMin;
+        increaseSpeedButton.interactable = _spinBehaviour.speed < SpeedMax;
     }
 
     // ── Scale ─────────────────────────────────────────────────────────────────
@@ -175,10 +206,14 @@ public class ARPlayUIController : MonoBehaviour
         shrinkOnlyButton.SetSelected(active == ScaleBehaviour.ScaleMode.ShrinkOnly);
     }
 
-    void AdjustScaleSpeed(float delta)
+    void AdjustScaleSpeed(float delta) => internal_AdjustScaleSpeed(delta);
+
+    internal void internal_AdjustScaleSpeed(float delta)
     {
-        if (_scaleBehaviour != null)
-            _scaleBehaviour.speed = Mathf.Clamp(_scaleBehaviour.speed + delta, 0.5f, 10f);
+        if (_scaleBehaviour == null) return;
+        _scaleBehaviour.speed = Mathf.Clamp(_scaleBehaviour.speed + delta, ScaleSpeedMin, ScaleSpeedMax);
+        scaleDecreaseSpeedButton.interactable = _scaleBehaviour.speed > ScaleSpeedMin;
+        scaleIncreaseSpeedButton.interactable = _scaleBehaviour.speed < ScaleSpeedMax;
     }
 
     // ── Bounce ────────────────────────────────────────────────────────────────
@@ -195,6 +230,9 @@ public class ARPlayUIController : MonoBehaviour
         bounceSpeedSlider.onValueChanged.AddListener(v  => { if (_bounceBehaviour != null) _bounceBehaviour.speed  = v; });
         bounceHeightSlider.onValueChanged.AddListener(v => { if (_bounceBehaviour != null) _bounceBehaviour.height = v; });
     }
+
+    internal void internal_SetSpinBehaviour(SpinBehaviour b)   => _spinBehaviour  = b;
+    internal void internal_SetScaleBehaviour(ScaleBehaviour b) => _scaleBehaviour = b;
 
     // ── Navigation ────────────────────────────────────────────────────────────
 

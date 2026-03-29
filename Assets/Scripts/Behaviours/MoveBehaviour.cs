@@ -9,20 +9,33 @@ public class MoveBehaviour : MonoBehaviour
     public float speed = 1f;
 
     private Vector3 _origin;
+    private MoveDirection _lastDirection;
+    private float _phaseStart;
 
-    static readonly Vector3[] _axes =
+    void Start()
     {
-        Vector3.right,
-        Vector3.up,
-        new Vector3(-1, 1, 0).normalized,
-        new Vector3( 1, 1, 0).normalized
-    };
-
-    void Start() => _origin = transform.localPosition;
+        _origin        = transform.localPosition;
+        _lastDirection = direction;
+        _phaseStart    = Time.time;
+    }
 
     void Update()
     {
-        float offset = Mathf.Sin(Time.time * speed) * distance;
-        transform.localPosition = _origin + _axes[(int)direction] * offset;
+        if (direction != _lastDirection)
+        {
+            _origin        = transform.localPosition;
+            _lastDirection = direction;
+            _phaseStart    = Time.time;
+        }
+
+        Vector3 axis = direction switch
+        {
+            MoveDirection.Vertical      => transform.up,
+            MoveDirection.LeftDiagonal  => (-transform.right + transform.up).normalized,
+            MoveDirection.RightDiagonal => ( transform.right + transform.up).normalized,
+            _                           => transform.right
+        };
+        float offset = Mathf.Sin((Time.time - _phaseStart) * speed) * distance;
+        transform.localPosition = _origin + axis * offset;
     }
 }

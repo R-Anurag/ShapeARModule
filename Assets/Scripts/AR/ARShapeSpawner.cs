@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ShapeARModule.Tests.PlayMode")]
+
 public class ARShapeSpawner : MonoBehaviour
 {
     [Header("AR References")]
@@ -25,6 +27,8 @@ public class ARShapeSpawner : MonoBehaviour
     private readonly List<ARRaycastHit> _hits = new();
     private bool _spawned = false;
     private GameObject _spawnedShape;
+    internal Collider _spawnedCollider;
+    internal bool _isTappable;
 
     void Awake()
     {
@@ -34,8 +38,8 @@ public class ARShapeSpawner : MonoBehaviour
 #endif
     }
 
-    void OnEnable()  => tapAction.action.performed += OnTap;
-    void OnDisable() => tapAction.action.performed -= OnTap;
+    void OnEnable()  { if (tapAction != null) tapAction.action.performed += OnTap; }
+    void OnDisable() { if (tapAction != null) tapAction.action.performed -= OnTap; }
 
     void OnTap(InputAction.CallbackContext ctx)
     {
@@ -63,12 +67,17 @@ public class ARShapeSpawner : MonoBehaviour
 
     void TryOpenLink(Vector2 screenPos)
     {
-        if (_spawnedShape == null) return;
-        var link = _spawnedShape.GetComponent<TappableLink>();
-        if (link == null) return;
+        if (!_isTappable) return;
+        internal_TryOpenLink(_spawnedShape, _spawnedCollider, screenPos);
+    }
 
+    internal void internal_TryOpenLink(GameObject shape, Collider collider, Vector2 screenPos)
+    {
+        if (shape == null || collider == null) return;
+        var link = shape.GetComponent<TappableLink>();
+        if (link == null) return;
         Ray ray = Camera.main.ScreenPointToRay(screenPos);
-        if (_spawnedShape.GetComponentInChildren<Collider>().Raycast(ray, out _, 100f))
+        if (collider.Raycast(ray, out _, 100f))
             link.Open();
     }
 
@@ -108,6 +117,8 @@ public class ARShapeSpawner : MonoBehaviour
         }
 
         GameObject shape = Instantiate(prefab, anchor.transform);
+        _spawnedCollider = shape.GetComponentInChildren<Collider>();
+        _isTappable = shape.GetComponent<TappableLink>() != null;
 
         Camera cam = Camera.main;
         float distance = Vector3.Distance(cam.transform.position, hitPose.position);

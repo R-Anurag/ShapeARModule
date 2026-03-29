@@ -12,6 +12,6 @@ public class BounceBehaviour : MonoBehaviour
     void Update()
     {
         float offset = Mathf.Abs(Mathf.Sin(Time.time * speed)) * height;
-        transform.localPosition = _origin + Vector3.up * offset;
+        transform.localPosition = _origin + transform.parent.up * offset;
     }
 }

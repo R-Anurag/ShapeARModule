@@ -5,21 +5,40 @@ public class ScaleBehaviour : MonoBehaviour
     public enum ScaleMode { Pulse, GrowOnly, ShrinkOnly }
 
     public ScaleMode mode = ScaleMode.Pulse;
-    public float minScale = 0.8f;
-    public float maxScale = 1.2f;
-    public float speed = 2f;
+    public float minScale = 0.5f;
+    public float maxScale = 1.5f;
+    public float speed = 1.5f;
 
     private Vector3 _originalScale;
-
-    void Start() => _originalScale = transform.localScale;
+    private bool _initialised;
+    private float _phaseStart;
+    private float _lastSpeed;
+    private ScaleMode _lastMode;
 
     void Update()
     {
+        if (!_initialised)
+        {
+            _originalScale = transform.localScale;
+            _phaseStart    = Time.time;
+            _lastSpeed     = speed;
+            _lastMode      = mode;
+            _initialised   = true;
+        }
+
+        if (speed != _lastSpeed || mode != _lastMode)
+        {
+            _phaseStart = Time.time;
+            _lastSpeed  = speed;
+            _lastMode   = mode;
+        }
+
+        float elapsed = (Time.time - _phaseStart) * speed;
         float t = mode switch
         {
-            ScaleMode.GrowOnly   => Mathf.Abs(Mathf.Sin(Time.time * speed)),
-            ScaleMode.ShrinkOnly => 1f - Mathf.Abs(Mathf.Sin(Time.time * speed)),
-            _                    => (Mathf.Sin(Time.time * speed) + 1f) * 0.5f
+            ScaleMode.GrowOnly   => Mathf.Repeat(elapsed, 1f),
+            ScaleMode.ShrinkOnly => 1f - Mathf.Repeat(elapsed, 1f),
+            _                    => (Mathf.Sin(elapsed) + 1f) * 0.5f
         };
         transform.localScale = _originalScale * Mathf.Lerp(minScale, maxScale, t);
     }

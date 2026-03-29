@@ -34,3 +34,6 @@ ContentPackages/
 
 # Git LFS placeholder
 !*.meta
+
+# Local planning notes
+UX_IMPROVEMENT_PLAN.md

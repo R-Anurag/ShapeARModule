@@ -4,6 +4,8 @@ An Android AR application built with Unity and ARFoundation. Users select a 3D s
 
 Submitted for the Catrobat mARine AR module task.
 
+- Screen capture video: [view recording](https://drive.google.com/drive/folders/1EYX4FLdd2XXmoKjumJ8K5DF8mGh6c2aJ?usp=sharing)
+
 ---
 
 ## Features
@@ -22,7 +24,7 @@ Submitted for the Catrobat mARine AR module task.
 
 | | |
 |---|---|
-| **UI** | All buttons and screen elements custom designed in Figma — [view designs](*(figma link here)*) |
+| **UI** | All buttons and screen elements custom designed in Figma — [view designs](https://www.figma.com/design/VXGOiJzONjdMwACpVtjgQi/GSoC-Entry-Task-Assets?node-id=57-2&t=ye0otEiq02xnJrDo-1) |
 | **3D Models** | Cube and Pyramid modelled in Blender; Sphere and Cylinder use Unity primitives |
 | **Cube Texture** | UV mapped in Blender with a custom texture made in Figma — displays Catrobat branding, GSoC, and profile links; tapping the cube opens the Catrobat org page |
 
@@ -122,6 +124,47 @@ Assets/
 
 ---
 
-## Submission
+## Testing
 
-- Screen capture video: *(link here)*
+The project follows a TDD workflow for the speed button limit behaviour in `ARPlayUIController`. Tests live in `Assets/Tests/` split across two assemblies.
+
+### Test Suites
+
+| Suite | Assembly | Runner | Tests |
+|---|---|---|---|
+| `ShapeModuleCacheTests` | `ShapeARModule.Tests.EditMode` | EditMode | 6 |
+| `ARShapeSpawnerTests` | `ShapeARModule.Tests.PlayMode` | PlayMode | 5 |
+| `SpeedButtonLimitTests` | `ShapeARModule.Tests.PlayMode` | PlayMode | 10 |
+
+### SpeedButtonLimitTests — TDD Walkthrough
+
+The speed +/− buttons on the AR control panel must disable at their limits (min/max) and re-enable when back in range. This behaviour was driven entirely by tests before the implementation existed.
+
+**Red phase** — tests written first against `internal_AdjustSpinSpeed` and `internal_AdjustScaleSpeed` methods that didn't exist yet. Unity's console showed compilation errors blocking the run:
+
+![Red phase — compilation errors](Documentation/Test%20Images/redPhase.png)
+
+**Minimal implementation** — the two `internal_*` methods were added to `ARPlayUIController` with just enough logic to clamp speed and set `button.interactable`:
+
+![Minimal implementation — diff in editor](Documentation/Test%20Images/minimalImplementation.png)
+
+**Green phase** — all 10 tests pass in the Unity Test Runner (PlayMode), completing the cycle:
+
+![Green phase — all 10 tests passing](Documentation/Test%20Images/greenPhase.png)
+
+### What the 10 tests cover
+
+| Test | Assertion |
+|---|---|
+| `SpinSpeed_AtMinimum_DecreaseButtonIsNotInteractable` | Decrease button disabled when spin speed hits 10 |
+| `SpinSpeed_AtMinimum_IncreaseButtonRemainsInteractable` | Increase button stays enabled at min |
+| `SpinSpeed_AtMaximum_IncreaseButtonIsNotInteractable` | Increase button disabled when spin speed hits 360 |
+| `SpinSpeed_AtMaximum_DecreaseButtonRemainsInteractable` | Decrease button stays enabled at max |
+| `SpinSpeed_InMiddle_BothButtonsInteractable` | Both buttons enabled when speed is mid-range |
+| `ScaleSpeed_AtMinimum_DecreaseButtonIsNotInteractable` | Decrease button disabled when scale speed hits 0.5 |
+| `ScaleSpeed_AtMinimum_IncreaseButtonRemainsInteractable` | Increase button stays enabled at min |
+| `ScaleSpeed_AtMaximum_IncreaseButtonIsNotInteractable` | Increase button disabled when scale speed hits 10 |
+| `ScaleSpeed_AtMaximum_DecreaseButtonRemainsInteractable` | Decrease button stays enabled at max |
+| `ScaleSpeed_InMiddle_BothButtonsInteractable` | Both buttons enabled when speed is mid-range |
+
+Testability is enabled via `internal_AdjustSpinSpeed` / `internal_AdjustScaleSpeed` / `internal_SetSpinBehaviour` / `internal_SetScaleBehaviour` methods on `ARPlayUIController`, exposed to the test assembly through `[assembly: InternalsVisibleTo("ShapeARModule.Tests.PlayMode")]`.
