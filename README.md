@@ -7,32 +7,10 @@ Submitted for the Catrobat mARine AR module task.
 - Screen capture video: [view recording](https://drive.google.com/drive/folders/1EYX4FLdd2XXmoKjumJ8K5DF8mGh6c2aJ?usp=sharing)
 
 **Beyond the minimum requirements:**
-- Distance-based auto-scaling — shape size clamped relative to camera distance at spawn
-- Live parameter control panel — adjust behaviour speed, axis, and height post-spawn
-- Android back navigation — hardware/gesture back correctly navigates between scenes
-- Unity Test Runner suites (21 tests across EditMode and PlayMode) — included to fulfil the TDD requirement in the proposal
-
----
-
-## Features
-
-- **4 shapes** — Cube, Sphere, Cylinder, Pyramid
-- **4 behaviours** — Spin, Move, Bounce, Scale
-- **AR spawn** — tap a detected plane to place the shape, world-locked via AR anchor
-- **Live parameter control** — adjust behaviour parameters from an on-screen panel after spawn
-- **Distance-based auto-scaling** — shape size is clamped relative to camera distance
-- **Tappable cube** — cube is UV mapped with a custom texture showing Catrobat, GSoC, and profile links; tapping it opens the Catrobat org page
-- **Android back navigation** — hardware/gesture back button navigates between scenes correctly
-
----
-
-## Design & Assets
-
-| | |
-|---|---|
-| **UI** | All buttons and screen elements custom designed in Figma — [view designs](https://www.figma.com/design/VXGOiJzONjdMwACpVtjgQi/GSoC-Entry-Task-Assets?node-id=57-2&t=ye0otEiq02xnJrDo-1) |
-| **3D Models** | Cube and Pyramid modelled in Blender; Sphere and Cylinder use Unity primitives |
-| **Cube Texture** | UV mapped in Blender with a custom texture made in Figma — displays Catrobat branding, GSoC, and profile links; tapping the cube opens the Catrobat org page |
+- Distance-based auto-scaling
+- Live parameter control panel
+- Android back navigation
+- Unity Test Runner suites (21 tests across EditMode and PlayMode)
 
 ---
 
@@ -50,6 +28,28 @@ ShapeSelectionScene → BehaviorSelectScene → ARPlayScene
 
 ---
 
+## Features
+
+- **4 shapes** — Cube, Sphere, Cylinder, Pyramid
+- **4 behaviours** — Spin, Move, Bounce, Scale
+- **AR spawn** — tap a detected plane to place the shape, world-locked via AR anchor
+- **Live parameter control** — adjust behaviour parameters from an on-screen panel after spawn
+- **Distance-based auto-scaling** — shape size is clamped relative to camera distance
+- **Tappable cube** — cube is UV mapped with a custom texture showing Catrobat, GSoC, and profile links; tapping it opens the Catrobat org page
+- **Android back navigation** — hardware/gesture back navigates between scenes; quits the app from the first scene
+
+---
+
+## Design & Assets
+
+| | |
+|---|---|
+| **UI** | All buttons and screen elements custom designed in Figma — [view designs](https://www.figma.com/design/VXGOiJzONjdMwACpVtjgQi/GSoC-Entry-Task-Assets?node-id=57-2&t=ye0otEiq02xnJrDo-1) |
+| **3D Models** | Cube and Pyramid modelled in Blender; Sphere and Cylinder use Unity primitives |
+| **Cube Texture** | UV mapped in Blender with a custom texture made in Figma — displays Catrobat branding, GSoC, and profile links; tapping the cube opens the Catrobat org page |
+
+---
+
 ## Architecture
 
 | Script | Responsibility |
@@ -60,6 +60,7 @@ ShapeSelectionScene → BehaviorSelectScene → ARPlayScene
 | `BehaviourSelector` | Behaviour button UI, navigates to AR scene |
 | `ARShapeSpawner` | Plane detection, shape instantiation, anchor creation, behaviour attachment, tappable link raycast |
 | `ARPlayUIController` | Wires animation control UI to the active behaviour component post-spawn |
+| `SelectableButton` | Toggle-style button that swaps sprite and tracks selected state |
 | `TappableLink` | Data component on prefab — holds URL, opened when cube is tapped post-spawn |
 | `SpinBehaviour` | Rotates shape around a chosen axis at adjustable speed |
 | `MoveBehaviour` | Oscillates shape along a chosen direction using a sine wave |
@@ -73,59 +74,6 @@ ShapeSelectionScene → BehaviorSelectScene → ARPlayScene
 - **Static cache for inter-scene data** — simple and sufficient for this scope, avoids `DontDestroyOnLoad` complexity; cache is seeded from the default-on toggle on first load so no shape is ever unset
 - **Tappable link via collider raycast** — post-spawn taps are routed through `Camera.main.ScreenPointToRay` against the shape's collider; only shapes with a `TappableLink` component respond, so other shapes are unaffected
 - **Android back navigation** — predictive back disabled in Player Settings so Android delivers back as a standard key event; caught via `Keyboard.current[Key.Escape].wasPressedThisFrame` in each scene controller
-
----
-
-## Tech Stack
-
-- Unity 6 (6000.1.9f1)
-- ARFoundation 6.1.1
-- ARCore 6.1.1
-- Universal Render Pipeline (URP) 17.1.0
-- Unity Input System 1.14.0
-- Target Platform: Android (min SDK 30)
-
----
-
-## Project Structure
-
-```
-Assets/
-├── Models/
-│   ├── Materials/       # All .mat material files
-│   ├── Textures/        # All texture files
-│   ├── ShapeCube.obj
-│   └── ShapePyramid.obj
-├── Prefabs/
-│   ├── ShapeCube.prefab
-│   ├── ShapeSphere.prefab
-│   ├── ShapeCylinder.prefab
-│   └── ShapePyramid.prefab
-├── Scenes/
-│   ├── ShapeSelectionScene.unity
-│   ├── BehaviorSelectScene.unity
-│   └── ARPlayScene.unity
-└── Scripts/
-    ├── AR/              # ARShapeSpawner, ARPlayUIController, TappableLink, SelectableButton
-    ├── Behaviours/      # SpinBehaviour, MoveBehaviour, BounceBehaviour, ScaleBehaviour
-    ├── Data/            # ShapeModuleCache, ShapeModuleData
-    └── Selection/       # ShapeSelector, BehaviourSelector, ToggleSpriteSwap
-```
-
----
-
-## Setup & Running
-
-### Requirements
-- Unity 6 with Android Build Support
-- Android device with ARCore support, or Unity AR Simulation for editor testing
-
-### Steps
-1. Clone the repository
-2. Open the project in Unity 6
-3. Open `Assets/Scenes/ShapeSelectionScene.unity`
-4. For device: build and deploy to an ARCore-supported Android device
-5. For editor: use the XR Simulation environment via the XR menu
 
 ---
 
@@ -173,3 +121,57 @@ The speed +/− buttons on the AR control panel must disable at their limits (mi
 | `ScaleSpeed_InMiddle_BothButtonsInteractable` | Both buttons enabled when speed is mid-range |
 
 Testability is enabled via `internal_AdjustSpinSpeed` / `internal_AdjustScaleSpeed` / `internal_SetSpinBehaviour` / `internal_SetScaleBehaviour` methods on `ARPlayUIController`, exposed to the test assembly through `[assembly: InternalsVisibleTo("ShapeARModule.Tests.PlayMode")]`.
+
+---
+
+## Tech Stack
+
+- Unity 6 (6000.1.9f1)
+- ARFoundation 6.1.1
+- ARCore 6.1.1
+- Universal Render Pipeline (URP) 17.1.0
+- Unity Input System 1.14.0
+- Target Platform: Android (min SDK 30)
+
+---
+
+## Project Structure
+
+```
+Assets/
+├── Models/
+│   ├── Materials/       # All .mat material files
+│   ├── Textures/        # All texture files
+│   ├── ShapeCube.obj
+│   └── ShapePyramid.obj
+├── Prefabs/
+│   ├── ShapeCube.prefab
+│   ├── ShapeSphere.prefab
+│   ├── ShapeCylinder.prefab
+│   └── ShapePyramid.prefab
+├── Sprites/             # All UI sprite assets
+├── Scenes/
+│   ├── ShapeSelectionScene.unity
+│   ├── BehaviorSelectScene.unity
+│   └── ARPlayScene.unity
+└── Scripts/
+    ├── AR/              # ARShapeSpawner, ARPlayUIController, TappableLink, SelectableButton
+    ├── Behaviours/      # SpinBehaviour, MoveBehaviour, BounceBehaviour, ScaleBehaviour
+    ├── Data/            # ShapeModuleCache, ShapeModuleData
+    └── Selection/       # ShapeSelector, BehaviourSelector, ToggleSpriteSwap
+```
+
+---
+
+## Setup & Running
+
+### Requirements
+- Unity 6 with Android Build Support
+- Android device with ARCore support, or Unity AR Simulation for editor testing
+
+### Steps
+1. Clone the repository
+2. Open the project in Unity 6
+3. Open `Assets/Scenes/ShapeSelectionScene.unity`
+4. For device: build and deploy to an ARCore-supported Android device
+5. For editor: use the XR Simulation environment via the XR menu
