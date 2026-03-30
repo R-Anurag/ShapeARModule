@@ -67,7 +67,6 @@ ShapeSelectionScene → BehaviorSelectScene → ARPlayScene
 - **Static cache for inter-scene data** — simple and sufficient for this scope, avoids `DontDestroyOnLoad` complexity; cache is seeded from the default-on toggle on first load so no shape is ever unset
 - **Tappable link via collider raycast** — post-spawn taps are routed through `Camera.main.ScreenPointToRay` against the shape's collider; only shapes with a `TappableLink` component respond, so other shapes are unaffected
 - **Android back navigation** — predictive back disabled in Player Settings so Android delivers back as a standard key event; caught via `Keyboard.current[Key.Escape].wasPressedThisFrame` in each scene controller
-- **Editor/simulator support** — mouse click handling via `#if UNITY_EDITOR` for testing without a physical device
 
 ---
 
