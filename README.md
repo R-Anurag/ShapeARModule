@@ -6,6 +6,12 @@ Submitted for the Catrobat mARine AR module task.
 
 - Screen capture video: [view recording](https://drive.google.com/drive/folders/1EYX4FLdd2XXmoKjumJ8K5DF8mGh6c2aJ?usp=sharing)
 
+**Beyond the minimum requirements:**
+- Distance-based auto-scaling — shape size clamped relative to camera distance at spawn
+- Live parameter control panel — adjust behaviour speed, axis, and height post-spawn
+- Android back navigation — hardware/gesture back correctly navigates between scenes
+- Unity Test Runner suites (21 tests across EditMode and PlayMode) — included to fulfil the TDD requirement in the proposal
+
 ---
 
 ## Features
